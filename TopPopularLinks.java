@@ -56,6 +56,9 @@ public class TopPopularLinks extends Configured implements Tool {
         Path tmpPath = new Path("/mp2/tmp");
         fs.delete(tmpPath, true);
 
+        Path finalPath = new Path(args[1]);
+        fs.delete(finalPath, true);
+
         Job jobA = Job.getInstance(conf, "Link Count");
         
         jobA.setOutputKeyClass(Text.class);
@@ -82,7 +85,7 @@ public class TopPopularLinks extends Configured implements Tool {
         jobB.setNumReduceTasks(1);
 
         FileInputFormat.setInputPaths(jobB, tmpPath);
-        FileOutputFormat.setOutputPath(jobB, new Path(args[1]));
+        FileOutputFormat.setOutputPath(jobB, finalPath);
 
         jobB.setInputFormatClass(KeyValueTextInputFormat.class);
         jobB.setOutputFormatClass(TextOutputFormat.class);
@@ -154,11 +157,11 @@ public class TopPopularLinks extends Configured implements Tool {
 		
 		@Override
 		protected void reduce(NullWritable key, Iterable<IntArrayWritable> values, Context context)	throws IOException, InterruptedException {
-        	for (IntArrayWritable value : values) {
-        		Integer[] pair = (Integer[]) value.toArray();
-    			results.add(new Pair<Integer, Integer>(pair[1], pair[0]));
-            	if (results.size() > N) results.remove(results.first());
-        	}
+        	  for (IntArrayWritable value : values) {
+        		IntWritable[] pair = (IntWritable[]) value.toArray();
+    			results.add(new Pair<Integer, Integer>(pair[1].get(), pair[0].get()));
+            	        if (results.size() > N) results.remove(results.first());
+        	  }
 		}
 		
 		@Override
