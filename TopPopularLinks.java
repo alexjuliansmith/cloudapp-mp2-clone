@@ -54,11 +54,28 @@ public class TopPopularLinks extends Configured implements Tool {
     }
 
     public static class LinkCountMap extends Mapper<Object, Text, IntWritable, IntWritable> {
-        // TODO
+        
+          @Override public void map(Object key, Text value, Context context) {
+             StringTokenizer t  = new StringTokenizer(value.toString(), " ");
+             int page = Integer.intValue(t.nextToken());
+             context.write(new IntWritable(page), new IntWritable(0));
+             while (t.hasMoreTokens()) {
+               int link = Integer.intValue(t.nextToken());
+               context.write(new IntWritable(page), new IntWritable(1));
+             }
+          }
     }
 
     public static class LinkCountReduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
-        // TODO
+        
+            @Override public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) {
+              int sum = 0; 
+              for (int value : values) {
+                 sum += value;
+              }
+              context.write(key, new IntWritable(sum);
+            }
+
     }
 
     public static class TopLinksMap extends Mapper<Text, Text, NullWritable, IntArrayWritable> {
@@ -69,7 +86,8 @@ public class TopPopularLinks extends Configured implements Tool {
             Configuration conf = context.getConfiguration();
             this.N = conf.getInt("N", 10);
         }
-        // TODO
+        
+        @Override public void map(Text
     }
 
     public static class TopLinksReduce extends Reducer<NullWritable, IntArrayWritable, IntWritable, IntWritable> {
