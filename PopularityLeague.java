@@ -48,7 +48,12 @@ public class PopularityLeague extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
     	  Job job = Job.getInstance(this.getConf(), "Popularity League");
-          job.setOutputKeyClass(Text.class);
+
+	  FileSystem fs = FileSystem.get(this.getConf());
+    	  Path finalPath = new Path(args[1]);
+          fs.delete(finalPath, true);          
+
+	  job.setOutputKeyClass(Text.class);
           job.setOutputValueClass(IntWritable.class);
 
           job.setMapOutputKeyClass(Text.class);
@@ -88,7 +93,7 @@ public class PopularityLeague extends Configured implements Tool {
 
       public static class LinkRankReduce extends Reducer<Text, IntWritable, Text, IntWritable> {
     	  List<String> leagueMembers;
-    	  TreeSet<Pair<Integer, String>> rankings;
+    	  TreeSet<Pair<Integer, String>> rankings = new TreeSet<>();
           
     	  @Override
           protected void setup(Context context) throws IOException,InterruptedException {
@@ -110,10 +115,16 @@ public class PopularityLeague extends Configured implements Tool {
 
 		@Override
 		protected void cleanup(Context context)	throws IOException, InterruptedException {
-			int rank = 0; int lastCount = -1;
+			int rank = 0;
+			int count  = 0; 
+                        int lastValue = -1;
 			for (Pair<Integer, String> page : rankings) {
-				context.write(new Text(page.second), new IntWritable(page.first));
-				rank++;
+				if (page.first != lastValue) {
+					lastValue = page.first;
+					rank = count;
+				}
+				context.write(new Text(page.second), new IntWritable(rank));
+				count++;
 			}
 		}
           
