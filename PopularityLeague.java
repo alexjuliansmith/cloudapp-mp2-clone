@@ -77,11 +77,11 @@ public class PopularityLeague extends Configured implements Tool {
             
             @Override public void map(Object key, Text value, Context context)  throws IOException, InterruptedException {
                StringTokenizer t  = new StringTokenizer(value.toString(), ": ");
-               Text page = new Text(t.nextToken());
-               //if (leagueMembers.contains(page)) context.write(page, new IntWritable(0));
+               t.nextToken(); //ignore page key
+               
                while (t.hasMoreTokens()) {
-                 Text link = new Text(t.nextToken());
-                 if (leagueMembers.contains(link.toString())) context.write(link, new IntWritable(1));
+                 String link = t.nextToken();
+                 if (leagueMembers.contains(link)) context.write(new Text(link), new IntWritable(1));
                }
             }
       }
@@ -98,13 +98,13 @@ public class PopularityLeague extends Configured implements Tool {
           }
     	  
           @Override public void reduce(Text key, Iterable<IntWritable> values, Context context)  throws IOException, InterruptedException {
-        	  String page = key.toString();
-        	  if (leagueMembers.contains(page)) {
+        	  String link = key.toString();
+        	  if (leagueMembers.contains(link)) {
 	            int sum = 0; 
 	            for (IntWritable value : values) {
 	               sum += value.get();
 	            }
-	            rankings.add(Pair.of(sum, page));
+	            rankings.add(Pair.of(sum, link));
         	}
           }
 
